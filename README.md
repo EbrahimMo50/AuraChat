@@ -2,4 +2,4 @@
 
   ## Contributing
 
-  Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute.
+  Please read our [CONVENTION.md](CONVENTION.md) for guidelines on how to contribute.
