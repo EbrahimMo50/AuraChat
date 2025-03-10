@@ -17,6 +17,7 @@
     <Folder Include="DTOs\" />
     <Folder Include="Hubs\" />
     <Folder Include="MiddleWares\" />
+    <Folder Include="Resources\" />
     <Folder Include="Repositries\" />
     <Folder Include="Services\" />
   </ItemGroup>
