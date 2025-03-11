@@ -15,7 +15,9 @@
       new/authorization-system
 
 ## Code Base
+##### Refer to the default coding conventions <a href="https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/identifier-names#naming-conventions">.NET Identifier Names</a>
 **on top of default coding conventions we will follow:**
 
 1. namespace to be file-scoped
 2. XML commenting on complex methods
+3. Don't capitalize abbreviations (use `UserGuid` instead of `UserGUID`)
