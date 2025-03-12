@@ -3,6 +3,6 @@
 public class RecieverState
 {
     public User Reciever { get; set; } = null!;
-    public bool IsRecieved { get; set; } = false;
-    public bool IsRead { get; set; } = false;
+    public DateTime? IsRecieved { get; set; }
+    public DateTime? IsRead { get; set; }
 }
