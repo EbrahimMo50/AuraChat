@@ -5,7 +5,7 @@
     
     **example**
 
-          Create: authorization middleware
+          Create authorization middleware
 
 2. branch naming wil follow
     (objective)/(name of the branch)
