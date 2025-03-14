@@ -3,14 +3,14 @@
 1. commit naming will follow
     (type)(optional scope): <description>
     
-    **###example**
+    **##example**
 
           Create: authorization middleware
 
 2. branch naming wil follow
     (objective)/(name of the branch)
     
-    **###example**
+    **##example**
 
           new/authorization-system
 
