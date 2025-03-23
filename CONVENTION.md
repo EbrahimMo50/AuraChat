@@ -23,3 +23,10 @@
 3. Don't capitalize abbreviations (use `UserGuid` instead of `UserGUID`)
 4. async methods must be followed by async so callers identify the method is async like `GetUsersAsync`
 5. single line if, else statments are to be made WITHOUT curled braces in a the next line after if, else
+6. defining service, repo, controller or any such will be defined in folder having both interface and concerate class with folder name pulralizing the service, repo ... and the inner files pularlizing the subject like
+
+**example**
+
+    - ValueServices
+    |--> IValuesService
+    |--> ValuesService
