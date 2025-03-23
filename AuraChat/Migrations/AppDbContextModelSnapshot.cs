@@ -78,13 +78,13 @@ namespace AuraChat.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CreaterId")
+                    b.Property<int>("CreatorId")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("GroupPictureGUID")
+                    b.Property<string>("GroupPictureGuid")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
@@ -96,7 +96,7 @@ namespace AuraChat.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreaterId")
+                    b.HasIndex("CreatorId")
                         .IsUnique();
 
                     b.HasIndex("UserId");
@@ -122,7 +122,7 @@ namespace AuraChat.Migrations
                     b.Property<int?>("GroupId")
                         .HasColumnType("int");
 
-                    b.Property<string>("MediaGUID")
+                    b.Property<string>("MediaGuid")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("SenderId")
@@ -165,7 +165,7 @@ namespace AuraChat.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ProfilePictureGUID")
+                    b.Property<string>("ProfilePictureGuid")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Salt")
@@ -233,9 +233,9 @@ namespace AuraChat.Migrations
 
             modelBuilder.Entity("AuraChat.Entities.Group", b =>
                 {
-                    b.HasOne("AuraChat.Entities.User", "Creater")
+                    b.HasOne("AuraChat.Entities.User", "Creator")
                         .WithOne()
-                        .HasForeignKey("AuraChat.Entities.Group", "CreaterId")
+                        .HasForeignKey("AuraChat.Entities.Group", "CreatorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -265,7 +265,7 @@ namespace AuraChat.Migrations
                                 .HasForeignKey("GroupId");
                         });
 
-                    b.Navigation("Creater");
+                    b.Navigation("Creator");
 
                     b.Navigation("Settings")
                         .IsRequired();
@@ -348,9 +348,6 @@ namespace AuraChat.Migrations
                                 .HasColumnType("bit");
 
                             b1.Property<bool>("IsVisible")
-                                .HasColumnType("bit");
-
-                            b1.Property<bool>("TwoFactorAuthEnabled")
                                 .HasColumnType("bit");
 
                             b1.HasKey("UserId");

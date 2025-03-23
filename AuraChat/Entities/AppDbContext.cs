@@ -21,7 +21,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Group>(entity =>
         {
             entity.OwnsOne(g => g.Settings);
-            entity.HasOne(g => g.Creater).WithOne().HasForeignKey<Group>(g => g.CreaterId);
+            entity.HasOne(g => g.Creator).WithOne().HasForeignKey<Group>(g => g.CreatorId);
         });
 
         modelBuilder.Entity<Message>(entity =>

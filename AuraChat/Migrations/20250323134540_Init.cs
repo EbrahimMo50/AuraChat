@@ -36,11 +36,10 @@ namespace AuraChat.Migrations
                     Salt = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     HashedPassword = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Bio = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ProfilePictureGUID = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ProfilePictureGuid = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserSettings_IsVisible = table.Column<bool>(type: "bit", nullable: false),
                     UserSettings_FriendsOnlyMessages = table.Column<bool>(type: "bit", nullable: false),
                     UserSettings_FriendsOnlyGroupInvite = table.Column<bool>(type: "bit", nullable: false),
-                    UserSettings_TwoFactorAuthEnabled = table.Column<bool>(type: "bit", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
@@ -93,19 +92,19 @@ namespace AuraChat.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    GroupPictureGUID = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    GroupPictureGuid = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Settings_AdminOnlyMessages = table.Column<bool>(type: "bit", nullable: false),
                     Settings_IsVisible = table.Column<bool>(type: "bit", nullable: false),
                     Settings_AllowMembersToModifyInfo = table.Column<bool>(type: "bit", nullable: false),
-                    CreaterId = table.Column<int>(type: "int", nullable: false),
+                    CreatorId = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Groups", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Groups_Users_CreaterId",
-                        column: x => x.CreaterId,
+                        name: "FK_Groups_Users_CreatorId",
+                        column: x => x.CreatorId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -125,7 +124,7 @@ namespace AuraChat.Migrations
                     SenderId = table.Column<int>(type: "int", nullable: false),
                     SentTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MediaGUID = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    MediaGuid = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ChatId = table.Column<int>(type: "int", nullable: true),
                     GroupId = table.Column<int>(type: "int", nullable: true)
                 },
@@ -221,9 +220,9 @@ namespace AuraChat.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Groups_CreaterId",
+                name: "IX_Groups_CreatorId",
                 table: "Groups",
-                column: "CreaterId",
+                column: "CreatorId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
