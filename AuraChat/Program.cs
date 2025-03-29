@@ -1,4 +1,5 @@
 using AuraChat.Entities;
+using AuraChat.MiddleWares;
 using AuraChat.Policies;
 using AuraChat.Repositries.UserRepo;
 using AuraChat.Services;
@@ -144,13 +145,12 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-
+   
     using (var scope = app.Services.CreateScope())
     {
         var services = scope.ServiceProvider;
         DbInitializer.Seed(services.GetRequiredService<AppDbContext>());
     }
-   
 }
 
 app.UseHttpsRedirection();
@@ -160,6 +160,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+if (!app.Environment.IsProduction())
+{
+    app.UseMiddleware<ExceptionHandlerMiddleware>();
+}
 
 app.UseRequestLocalization(localizationOptions);
 
