@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuraChat.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250323134540_Init")]
-    partial class Init
+    [Migration("20250327142248_AddUniqueIndexOnEmailUsers")]
+    partial class AddUniqueIndexOnEmailUsers
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -53,10 +53,10 @@ namespace AuraChat.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("UserAId")
+                    b.Property<int?>("UserAId")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserBId")
+                    b.Property<int?>("UserBId")
                         .HasColumnType("int");
 
                     b.Property<int?>("UserId")
@@ -158,7 +158,7 @@ namespace AuraChat.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("HashedPassword")
                         .IsRequired()
@@ -180,6 +180,9 @@ namespace AuraChat.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Users");
@@ -187,11 +190,11 @@ namespace AuraChat.Migrations
 
             modelBuilder.Entity("AuraChat.Entities.UserGroup", b =>
                 {
-                    b.Property<int>("id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("GroupId")
                         .HasColumnType("int");
@@ -202,7 +205,7 @@ namespace AuraChat.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.HasKey("id");
+                    b.HasKey("Id");
 
                     b.HasIndex("GroupId");
 
@@ -216,14 +219,12 @@ namespace AuraChat.Migrations
                     b.HasOne("AuraChat.Entities.User", "UserA")
                         .WithOne()
                         .HasForeignKey("AuraChat.Entities.Chat", "UserAId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("AuraChat.Entities.User", "UserB")
                         .WithOne()
                         .HasForeignKey("AuraChat.Entities.Chat", "UserBId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("AuraChat.Entities.User", null)
                         .WithMany("Chats")
@@ -322,7 +323,7 @@ namespace AuraChat.Migrations
                             b1.HasOne("AuraChat.Entities.User", "Reciever")
                                 .WithMany()
                                 .HasForeignKey("RecieverId")
-                                .OnDelete(DeleteBehavior.Cascade)
+                                .OnDelete(DeleteBehavior.NoAction)
                                 .IsRequired();
 
                             b1.Navigation("Reciever");
@@ -353,6 +354,9 @@ namespace AuraChat.Migrations
                             b1.Property<bool>("IsVisible")
                                 .HasColumnType("bit");
 
+                            b1.Property<bool>("TwoFactorAuthEnabled")
+                                .HasColumnType("bit");
+
                             b1.HasKey("UserId");
 
                             b1.ToTable("Users");
@@ -376,7 +380,7 @@ namespace AuraChat.Migrations
                     b.HasOne("AuraChat.Entities.User", "User")
                         .WithMany("UsersGroups")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Group");

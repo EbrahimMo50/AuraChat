@@ -40,6 +40,7 @@ namespace AuraChat.Migrations
                     UserSettings_IsVisible = table.Column<bool>(type: "bit", nullable: false),
                     UserSettings_FriendsOnlyMessages = table.Column<bool>(type: "bit", nullable: false),
                     UserSettings_FriendsOnlyGroupInvite = table.Column<bool>(type: "bit", nullable: false),
+                    UserSettings_TwoFactorAuthEnabled = table.Column<bool>(type: "bit", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
@@ -58,8 +59,8 @@ namespace AuraChat.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserAId = table.Column<int>(type: "int", nullable: false),
-                    UserBId = table.Column<int>(type: "int", nullable: false),
+                    UserAId = table.Column<int>(type: "int", nullable: true),
+                    UserBId = table.Column<int>(type: "int", nullable: true),
                     UserId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
@@ -69,14 +70,12 @@ namespace AuraChat.Migrations
                         name: "FK_Chats_Users_UserAId",
                         column: x => x.UserAId,
                         principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Chats_Users_UserBId",
                         column: x => x.UserBId,
                         principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Chats_Users_UserId",
                         column: x => x.UserId,
@@ -153,7 +152,7 @@ namespace AuraChat.Migrations
                 name: "UserGroup",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     GroupId = table.Column<int>(type: "int", nullable: false),
@@ -161,7 +160,7 @@ namespace AuraChat.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserGroup", x => x.id);
+                    table.PrimaryKey("PK_UserGroup", x => x.Id);
                     table.ForeignKey(
                         name: "FK_UserGroup_Groups_GroupId",
                         column: x => x.GroupId,
@@ -172,8 +171,7 @@ namespace AuraChat.Migrations
                         name: "FK_UserGroup_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -200,8 +198,7 @@ namespace AuraChat.Migrations
                         name: "FK_RecieverState_Users_RecieverId",
                         column: x => x.RecieverId,
                         principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(

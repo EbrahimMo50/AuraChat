@@ -10,6 +10,13 @@ public class LoginDto
     public string Password { get; set; } = null!;
 }
 
+public class LoginResultDto
+{
+    public string? Token { get; set; } = null;
+    public bool TwoFactorRequired { get; set; } = true;
+    public int UserId { get; set; }
+}
+
 public class ChangePassDto
 {
     [EmailAddress]
@@ -20,15 +27,19 @@ public class ChangePassDto
     public string NewPassword { get; set; } = null!;
 }
 
-public class RegisterDto
+public class RegisterRequestDto
 {
-    [RegularExpression(@"^[\p{L}\s]{2,20}$", ErrorMessage = "only letters and spaces allowed, max length 20 and min 2.")]
-    public string UserName { get; set; } = null!;
     [EmailAddress]
     public string Email { get; set; } = null!;
     [MinLength(4)]
     public string Password { get; set; } = null!;
-    [MinLength(4)]
-    [Compare(nameof(Password), ErrorMessage = "passwords do not match")]
-    public string ConfirmPassword { get; set; } = null!;
+}
+
+public class RegisterConfirmDto
+{
+    [EmailAddress]
+    public string Email { get; set; } = null!;
+    [RegularExpression(@"^[\p{L}\s]{2,20}$", ErrorMessage = "only letters and spaces allowed, max length 20 and min 2.")]
+    public string UserName { get; set; } = null!;
+    public string Otp { get; set; } = null!;
 }

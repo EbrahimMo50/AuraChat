@@ -1,7 +1,8 @@
-﻿using System.Text.RegularExpressions;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace AuraChat.Entities;
 
+[Index(nameof(Email), IsUnique = true)]
 public class User
 {
     public int Id {  get; private set; }
