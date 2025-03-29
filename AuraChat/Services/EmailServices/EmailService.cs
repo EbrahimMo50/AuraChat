@@ -11,7 +11,8 @@ public class EmailService : IEmailService
     {
         using (MailMessage mail = new())
         {
-            mail.From = new MailAddress("lmsmailproject@gmail.com");
+            var email = Environment.GetEnvironmentVariable("BusniessAccountEmail") ?? throw new Exception("email field not found in enviroment");
+            mail.From = new MailAddress(email);
             mail.To.Add(emailModel.ReicieverEmail);
             mail.Subject = emailModel.Header;
             mail.Body = emailModel.Body;
@@ -19,7 +20,7 @@ public class EmailService : IEmailService
 
             using (SmtpClient smtp = new("smtp.gmail.com", 587))
             {
-                smtp.Credentials = new NetworkCredential("lmsmailproject@gmail.com", "zqkdstiwgwiscsvp");
+                smtp.Credentials = new NetworkCredential(email, Environment.GetEnvironmentVariable("BusinessAccountPassword") ?? throw new Exception("password field not found in enviroment"));
                 smtp.EnableSsl = true;
                 smtp.Send(mail);
             }
