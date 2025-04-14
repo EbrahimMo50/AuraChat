@@ -10,8 +10,8 @@ public interface IAuthService
     /// <param name="loginDto"></param>
     public Task<LoginResultDto> LoginAsync(LoginDto loginDto);
     public Task RegisterAsync(RegisterRequestDto registerDto);
-    public void ChangePassword(ChangePassDto changePassDto);
+    public Task<ChangePassResultDto> ChangePasswordAsync(ChangePassDto changePassDto);
     public LoginResultDto ConfirmLogin(int userId, string otp);
     public Task ConfirmRegisterAsync(RegisterConfirmDto registerConfirmDto);
-    public void ConfirmChangePassword(int userId,string otp);
+    public Task<ChangePassResultDto> ConfirmChangePasswordAsync(int userId,string otp);
 }

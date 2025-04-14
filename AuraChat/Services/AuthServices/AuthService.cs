@@ -22,7 +22,7 @@ public class AuthService(IMemoryCache cache, IStringLocalizer<AuthService> strin
         if (Hash(user.Salt, loginDto.Password) == user.HashedPassword)
         {
             if (!user.UserSettings.TwoFactorAuthEnabled)
-                return new LoginResultDto() { Token = tokenService.GenerateAccessToken(user), UserId = user.Id, TwoFactorRequired = false };
+                return new LoginResultDto() { AccessToken = tokenService.GenerateAccessToken(user), UserId = user.Id, TwoFactorRequired = false };
 
             var verificationCode = new Random().Next(100000, 999999).ToString();
 
@@ -77,9 +77,52 @@ public class AuthService(IMemoryCache cache, IStringLocalizer<AuthService> strin
         });
     }
 
-    public void ChangePassword(ChangePassDto changePassDto)
+    public async Task<ChangePassResultDto> ChangePasswordAsync(ChangePassDto changePassDto)
     {
-        throw new NotImplementedException();
+        var user = userRepo.GetByEmailAsync(changePassDto.Email).Result ?? throw new NotFoundException(stringLocalizer["Email not found"]);
+        if (user.HashedPassword == Hash(user.Salt, changePassDto.OldPassword))
+        {
+            if (!user.UserSettings.TwoFactorAuthEnabled)
+            {
+                var salt = GenerateSalt();
+                var hashedPassword = Hash(salt, changePassDto.NewPassword);
+                user.HashedPassword = hashedPassword;
+                user.Salt = salt;
+                user.UserSettings.PasswordChangeCounter+=1;
+                await userRepo.UpdateAsync(user);
+                return new ChangePassResultDto() { Confirmed = true, TwoFactorRequired = false };
+            }
+
+            // if the user has two factor auth enabled
+
+            var verificationCode = new Random().Next(100000, 999999).ToString();
+
+            var oldCache = cache.Get<dynamic>($"change_password:{user.Id}");
+            if (oldCache != null)
+            {
+                verificationCode = oldCache.VerificationCode;
+                cache.Remove($"change_password:{user.Id}");
+            }
+
+            cache.Set(
+                $"change_password:{user.Id}",
+                new { VerificationCode = verificationCode, NewPass = changePassDto.NewPassword },
+                DateTime.Now.AddMinutes(15));
+            // sending the otp to the user
+            emailService.SendEmail(new EmailModel()
+            {
+                Header = "OTP for Changing Password",
+                Body = EmailTemplates.GetOtpEmailBody(verificationCode),
+                ReicieverEmail = user.Email
+            });
+
+            return new ChangePassResultDto() { Confirmed = false, TwoFactorRequired = false };
+        }
+        else
+        {
+            throw new BadRequestException(stringLocalizer["Password is incorrect"]);
+        }
+        throw new NotFoundException(stringLocalizer["could find propsed user"]);    
     }
 
     public LoginResultDto ConfirmLogin(int userId, string otp)
@@ -89,7 +132,7 @@ public class AuthService(IMemoryCache cache, IStringLocalizer<AuthService> strin
         if (cachedData.VerificationCode == otp)
         {
             cache.Remove(cacheKey); 
-            return new LoginResultDto() { Token = tokenService.GenerateAccessToken(cachedData.User), TwoFactorRequired = true, UserId = userId }; 
+            return new LoginResultDto() { AccessToken = tokenService.GenerateAccessToken(cachedData.User), TwoFactorRequired = true, UserId = userId }; 
         }
         throw new BadRequestException(stringLocalizer["could not find proposed request or expired"]);
     }
@@ -115,9 +158,27 @@ public class AuthService(IMemoryCache cache, IStringLocalizer<AuthService> strin
         throw new BadRequestException(stringLocalizer["could not find proposed request or expired"]);
     }
 
-    public void ConfirmChangePassword(int userId, string otp)
+    // for security integration tokens shall be expired from all instances when a user changes his password
+    public async Task<ChangePassResultDto> ConfirmChangePasswordAsync(int userId, string otp)
     {
-        throw new NotImplementedException();
+        var cacheKey = $"change_password:{userId}";
+        var cachedData = cache.Get<dynamic>(cacheKey) ?? throw new NotFoundException(stringLocalizer["could not find given entry"]);
+
+        if (cachedData.VerificationCode == otp)
+        {
+            cache.Remove(cacheKey);
+
+            var user = await userRepo.GetByIdAsync(userId) ?? throw new NotFoundException(stringLocalizer["user not found"]);
+            var salt = GenerateSalt();
+            var hashedPassword = Hash(salt, cachedData.NewPassword);
+            user.HashedPassword = hashedPassword;
+            user.Salt = salt;
+            user.UserSettings.PasswordChangeCounter += 1;   
+            await userRepo.UpdateAsync(user);
+            return new ChangePassResultDto() { Confirmed = true, TwoFactorRequired = true };
+        }
+
+        throw new BadRequestException(stringLocalizer["could not find proposed request or expired"]);
     }
 
     private static string Hash(string salt, string pass)

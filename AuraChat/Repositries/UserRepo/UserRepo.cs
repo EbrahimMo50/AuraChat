@@ -22,4 +22,10 @@ public class UserRepo(AppDbContext dbContext) : IUserRepo
         return await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
     }
 
+    public async Task<User> UpdateAsync(User user)
+    {
+        var result = dbContext.Users.Update(user);
+        await dbContext.SaveChangesAsync();
+        return result.Entity;
+    }
 }

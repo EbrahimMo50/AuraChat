@@ -20,6 +20,7 @@
   <ItemGroup>
     <Folder Include="DTOs\" />
     <Folder Include="Hubs\" />
+    <Folder Include="Resources\Services\AuthServices\" />
   </ItemGroup>
 
 </Project>

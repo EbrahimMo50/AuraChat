@@ -12,7 +12,8 @@ public class LoginDto
 
 public class LoginResultDto
 {
-    public string? Token { get; set; } = null;
+    public string? AccessToken { get; set; } = null;
+    //public string? RefreshToken { get; set; } = null;
     public bool TwoFactorRequired { get; set; } = true;
     public int UserId { get; set; }
 }
@@ -25,6 +26,12 @@ public class ChangePassDto
     public string OldPassword { get; set; } = null!;
     [MinLength(4)]
     public string NewPassword { get; set; } = null!;
+}
+
+public class ChangePassResultDto
+{
+    public bool TwoFactorRequired { get; set; } = true;
+    public bool Confirmed { get; set; } = false;
 }
 
 public class RegisterRequestDto

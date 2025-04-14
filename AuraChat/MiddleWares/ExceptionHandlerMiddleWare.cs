@@ -13,21 +13,21 @@ public class ExceptionHandlerMiddleware(RequestDelegate next, ILogger<ExceptionH
         }
         catch (BadHttpRequestException ex)
         {
-            logger.LogError(ex, "A bad request exception occurred.");
+            logger.LogError(ex, "bad request exception occurred.");
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsJsonAsync(new { Error = ex.Message });
         }
         catch (NotFoundException ex)
         {
-            logger.LogError(ex, "A bad request exception occurred.");
+            logger.LogError(ex, "not found request exception occurred.");
             context.Response.StatusCode = StatusCodes.Status404NotFound;
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsJsonAsync(new { Error = ex.Message });
         }
         catch (ConflictException ex)
         {
-            logger.LogError(ex, "A bad request exception occurred.");
+            logger.LogError(ex, "conflicting exception occurred.");
             context.Response.StatusCode = StatusCodes.Status409Conflict;
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsJsonAsync(new { Error = ex.Message });

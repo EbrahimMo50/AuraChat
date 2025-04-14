@@ -1,5 +1,6 @@
 ﻿using AuraChat.DTOs;
 using AuraChat.Services.AuthServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuraChat.Controllers;
@@ -29,9 +30,25 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     [HttpPost("confirm-register")]
-    public async Task<IActionResult> SignUp(RegisterConfirmDto registerConfirmDto)
+    public async Task<IActionResult> ConfirmSignUp(RegisterConfirmDto registerConfirmDto)
     {
         await authService.ConfirmRegisterAsync(registerConfirmDto);
         return Ok();
+    }
+
+    [Authorize]
+    [HttpPut("change-password")]
+    public async Task<IActionResult> ChangePassword(ChangePassDto changePassDto)
+    {
+        var result = await authService.ChangePasswordAsync(changePassDto);
+        return Ok(result);
+    }
+    [Authorize]
+    [HttpPut("confirm-change-password")]
+    public async Task<IActionResult> ConfirmChangePassword(string otp)
+    {
+        var userId = int.Parse(HttpContext.User.FindFirst("Id")!.Value);
+        var result = await authService.ConfirmChangePasswordAsync(userId, otp);
+        return Ok(result);
     }
 }

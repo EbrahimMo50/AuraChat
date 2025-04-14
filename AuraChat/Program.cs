@@ -8,11 +8,13 @@ using AuraChat.Services.EmailServices;
 using AuraChat.Services.TokenServices;
 using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Globalization;
+using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -99,6 +101,32 @@ builder.Services
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(PrivateKey)),
             ValidateIssuer = false,
             ValidateAudience = false
+        };
+        x.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                // Resolve the UserManager (or your service)
+                var userRepo = context.HttpContext.RequestServices
+                    .GetRequiredService<IUserRepo>();
+
+                // Get the user's ID and pwd_version from the token
+                var userId = context.Principal!.FindFirstValue(ClaimTypes.NameIdentifier);
+                var passwordChangeTracker = context.Principal!.FindFirstValue("PCT");
+
+                if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(passwordChangeTracker))
+                {
+                    context.Fail("Invalid token");
+                    return;
+                }
+
+                // Fetch the user from the database
+                var user = await userRepo.GetByIdAsync(int.Parse(userId));
+                if (user == null || user.UserSettings.PasswordChangeCounter != int.Parse(passwordChangeTracker))
+                {
+                    context.Fail("Token invalidated due to password change");
+                }
+            }
         };
     });
 

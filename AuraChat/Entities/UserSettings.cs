@@ -6,4 +6,5 @@ public class UserSettings
     public bool FriendsOnlyMessages { get; set; } = false;
     public bool FriendsOnlyGroupInvite { get; set; } = false;
     public bool TwoFactorAuthEnabled { get; set; } = true;
+    public int PasswordChangeCounter {  get; set; } = 0;
 }

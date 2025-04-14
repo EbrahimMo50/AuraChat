@@ -42,6 +42,7 @@ public class TokensService : ITokensService
         claims.AddClaim(new Claim(ClaimTypes.Name, user.Name));
         claims.AddClaim(new Claim(ClaimTypes.Email, user.Email));
         claims.AddClaim(new Claim("id", user.Id.ToString()));
+        claims.AddClaim(new Claim("pct", user.UserSettings.PasswordChangeCounter.ToString()));  // password change tracker attribute
 
         return claims;
     }
