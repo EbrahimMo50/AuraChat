@@ -111,7 +111,7 @@ builder.Services
                     .GetRequiredService<IUserRepo>();
 
                 // Get the user's ID and pwd_version from the token
-                var userId = context.Principal!.FindFirstValue(ClaimTypes.NameIdentifier);
+                var userId = context.Principal!.FindFirstValue("id");
                 var passwordChangeTracker = context.Principal!.FindFirstValue("PCT");
 
                 if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(passwordChangeTracker))
@@ -173,7 +173,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-   
+
     using (var scope = app.Services.CreateScope())
     {
         var services = scope.ServiceProvider;
@@ -183,6 +183,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseMiddleware<ExceptionHandlerMiddleware>();
+
 app.UseAuthentication();
 
 app.UseAuthorization();
@@ -191,7 +193,7 @@ app.MapControllers();
 
 if (!app.Environment.IsProduction())
 {
-    app.UseMiddleware<ExceptionHandlerMiddleware>();
+    // app.UseMiddleware<ExceptionHandlerMiddleware>();
 }
 
 app.UseRequestLocalization(localizationOptions);

@@ -77,9 +77,9 @@ public class AuthService(IMemoryCache cache, IStringLocalizer<AuthService> strin
         });
     }
 
-    public async Task<ChangePassResultDto> ChangePasswordAsync(ChangePassDto changePassDto)
+    public async Task<ChangePassResultDto> ChangePasswordAsync(int userId, ChangePassDto changePassDto)
     {
-        var user = userRepo.GetByEmailAsync(changePassDto.Email).Result ?? throw new NotFoundException(stringLocalizer["Email not found"]);
+        var user = userRepo.GetByIdAsync(userId).Result ?? throw new NotFoundException(stringLocalizer["User Not Found"]);
         if (user.HashedPassword == Hash(user.Salt, changePassDto.OldPassword))
         {
             if (!user.UserSettings.TwoFactorAuthEnabled)
@@ -106,7 +106,7 @@ public class AuthService(IMemoryCache cache, IStringLocalizer<AuthService> strin
 
             cache.Set(
                 $"change_password:{user.Id}",
-                new { VerificationCode = verificationCode, NewPass = changePassDto.NewPassword },
+                new { VerificationCode = verificationCode, changePassDto.NewPassword },
                 DateTime.Now.AddMinutes(15));
             // sending the otp to the user
             emailService.SendEmail(new EmailModel()
@@ -116,7 +116,7 @@ public class AuthService(IMemoryCache cache, IStringLocalizer<AuthService> strin
                 ReicieverEmail = user.Email
             });
 
-            return new ChangePassResultDto() { Confirmed = false, TwoFactorRequired = false };
+            return new ChangePassResultDto() { Confirmed = false, TwoFactorRequired = true };
         }
         else
         {
@@ -180,6 +180,8 @@ public class AuthService(IMemoryCache cache, IStringLocalizer<AuthService> strin
 
         throw new BadRequestException(stringLocalizer["could not find proposed request or expired"]);
     }
+
+
 
     private static string Hash(string salt, string pass)
     {

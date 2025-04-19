@@ -11,7 +11,7 @@ public class ExceptionHandlerMiddleware(RequestDelegate next, ILogger<ExceptionH
         {
             await next.Invoke(context);
         }
-        catch (BadHttpRequestException ex)
+        catch (BadRequestException ex)
         {
             logger.LogError(ex, "bad request exception occurred.");
             context.Response.StatusCode = StatusCodes.Status400BadRequest;

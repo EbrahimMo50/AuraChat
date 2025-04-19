@@ -20,8 +20,6 @@ public class LoginResultDto
 
 public class ChangePassDto
 {
-    [EmailAddress]
-    public string Email { get; set; } = null!;
     [MinLength(4)]
     public string OldPassword { get; set; } = null!;
     [MinLength(4)]

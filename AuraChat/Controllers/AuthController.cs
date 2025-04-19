@@ -40,7 +40,8 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPut("change-password")]
     public async Task<IActionResult> ChangePassword(ChangePassDto changePassDto)
     {
-        var result = await authService.ChangePasswordAsync(changePassDto);
+        var userId = int.Parse(HttpContext.User.FindFirst("Id")!.Value);
+        var result = await authService.ChangePasswordAsync(userId, changePassDto);
         return Ok(result);
     }
     [Authorize]
