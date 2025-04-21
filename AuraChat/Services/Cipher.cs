@@ -4,7 +4,8 @@ using System.Text;
 namespace AuraChat.Services;
 
 /// <summary>
-/// Advanced Encryption Standard (AES) cipher providing encrypting and decrypting, IV is concatinated at the end of the cipher text and extracted with constant byte size (16)
+/// Advanced Encryption Standard (AES) cipher providing encrypting and decryptin.
+/// IV is concatinated at the end of the cipher text and extracted with constant byte size (16) for easier managment.
 /// </summary>
 public static class Cipher
 {
@@ -29,6 +30,8 @@ public static class Cipher
             using (var encryptor = aes.CreateEncryptor())
             using (var ms = new MemoryStream())
             {
+                // embeding the IV at the begging for single string storage
+
                 ms.Write(aes.IV, 0, IvLength);
                 using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
                 using (var sw = new StreamWriter(cs))
