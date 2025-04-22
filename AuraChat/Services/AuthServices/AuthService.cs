@@ -14,7 +14,7 @@ using System.Text;
 namespace AuraChat.Services.AuthServices;
 
 public class AuthService(IMemoryCache cache, IStringLocalizer<AuthService> stringLocalizer, IUserRepo userRepo, 
-    ITokensService tokenService, IEmailService emailService, IConfiguration configuration) : IAuthService
+    ITokensService tokenService, IEmailService emailService) : IAuthService
 {
     #region Login
     public async Task<LoginResultDto> LoginAsync(LoginDto loginDto)
