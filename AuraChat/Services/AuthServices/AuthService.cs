@@ -13,8 +13,10 @@ using System.Text;
 
 namespace AuraChat.Services.AuthServices;
 
-public class AuthService(IMemoryCache cache, IStringLocalizer<AuthService> stringLocalizer, IUserRepo userRepo, ITokensService tokenService, IEmailService emailService) : IAuthService
+public class AuthService(IMemoryCache cache, IStringLocalizer<AuthService> stringLocalizer, IUserRepo userRepo, 
+    ITokensService tokenService, IEmailService emailService, IConfiguration configuration) : IAuthService
 {
+    #region Login
     public async Task<LoginResultDto> LoginAsync(LoginDto loginDto)
     {
         var user = await userRepo.GetByEmailAsync(loginDto.Email) ?? throw new NotFoundException(stringLocalizer["Email not found"]);
@@ -53,7 +55,20 @@ public class AuthService(IMemoryCache cache, IStringLocalizer<AuthService> strin
 
         throw new BadRequestException(stringLocalizer["Password is incorrect"]);
     }
+    public LoginResultDto ConfirmLogin(int userId, string otp)
+    {
+        var cacheKey = $"login:{userId}";
+        var cachedData = cache.Get<dynamic>(cacheKey) ?? throw new NotFoundException(stringLocalizer["could not find given entry"]);
+        if (cachedData.VerificationCode == otp)
+        {
+            cache.Remove(cacheKey);
+            return new LoginResultDto() { AccessToken = tokenService.GenerateAccessToken(cachedData.User), TwoFactorRequired = true, UserId = userId };
+        }
+        throw new BadRequestException(stringLocalizer["could not find proposed request or expired"]);
+    }
+    #endregion
 
+    #region Registeration
     public async Task RegisterAsync(RegisterRequestDto registerDto)
     {
         if (cache.Get<dynamic>($"registerEmail:{registerDto.Email}") != null)
@@ -76,7 +91,29 @@ public class AuthService(IMemoryCache cache, IStringLocalizer<AuthService> strin
             ReicieverEmail = registerDto.Email
         });
     }
+    public async Task ConfirmRegisterAsync(RegisterConfirmDto registerConfirmDto)
+    {
+        var cacheKey = $"registerEmail:{registerConfirmDto.Email}";
+        var cachedData = cache.Get<dynamic>(cacheKey) ?? throw new NotFoundException(stringLocalizer["could not find given entry"]);
 
+        if (cachedData.VerificationCode == registerConfirmDto.Otp)
+        {
+            cache.Remove(cacheKey);
+
+            if (await userRepo.GetByEmailAsync(registerConfirmDto.Email) != null)
+                throw new ConflictException(stringLocalizer["email is already used by another user"]);
+
+            var salt = GenerateSalt();
+            var hashedPassword = Hash(salt, cachedData.RegisterDto.Password);
+
+            await userRepo.AddAsync(new User() { Email = registerConfirmDto.Email, Name = registerConfirmDto.UserName, Salt = salt, HashedPassword = hashedPassword });
+            return;
+        }
+        throw new BadRequestException(stringLocalizer["could not find proposed request or expired"]);
+    }
+    #endregion
+
+    #region ChangePassword
     public async Task<ChangePassResultDto> ChangePasswordAsync(int userId, ChangePassDto changePassDto)
     {
         var user = userRepo.GetByIdAsync(userId).Result ?? throw new NotFoundException(stringLocalizer["User Not Found"]);
@@ -125,40 +162,7 @@ public class AuthService(IMemoryCache cache, IStringLocalizer<AuthService> strin
         throw new NotFoundException(stringLocalizer["could find propsed user"]);    
     }
 
-    public LoginResultDto ConfirmLogin(int userId, string otp)
-    {
-        var cacheKey = $"login:{userId}";
-        var cachedData = cache.Get<dynamic>(cacheKey) ?? throw new NotFoundException(stringLocalizer["could not find given entry"]);
-        if (cachedData.VerificationCode == otp)
-        {
-            cache.Remove(cacheKey); 
-            return new LoginResultDto() { AccessToken = tokenService.GenerateAccessToken(cachedData.User), TwoFactorRequired = true, UserId = userId }; 
-        }
-        throw new BadRequestException(stringLocalizer["could not find proposed request or expired"]);
-    }
-
-    public async Task ConfirmRegisterAsync(RegisterConfirmDto registerConfirmDto)
-    {
-        var cacheKey = $"registerEmail:{registerConfirmDto.Email}";
-        var cachedData = cache.Get<dynamic>(cacheKey) ?? throw new NotFoundException(stringLocalizer["could not find given entry"]);
-
-        if (cachedData.VerificationCode == registerConfirmDto.Otp)
-        {
-            cache.Remove(cacheKey);
-
-            if (await userRepo.GetByEmailAsync(registerConfirmDto.Email) != null)
-                throw new ConflictException(stringLocalizer["email is already used by another user"]);
-
-            var salt = GenerateSalt();
-            var hashedPassword = Hash(salt, cachedData.RegisterDto.Password);
-
-            await userRepo.AddAsync(new User() { Email = registerConfirmDto.Email, Name = registerConfirmDto.UserName, Salt = salt, HashedPassword = hashedPassword });
-            return;
-        }
-        throw new BadRequestException(stringLocalizer["could not find proposed request or expired"]);
-    }
-
-    // for security integration tokens shall be expired from all instances when a user changes his password
+    // for security integration tokens shall be expired from all instances when a user changes his password using a stamp of password version
     public async Task<ChangePassResultDto> ConfirmChangePasswordAsync(int userId, string otp)
     {
         var cacheKey = $"change_password:{userId}";
@@ -173,15 +177,69 @@ public class AuthService(IMemoryCache cache, IStringLocalizer<AuthService> strin
             var hashedPassword = Hash(salt, cachedData.NewPassword);
             user.HashedPassword = hashedPassword;
             user.Salt = salt;
-            user.UserSettings.PasswordChangeCounter += 1;   
+            user.UserSettings.PasswordChangeCounter += 1;
             await userRepo.UpdateAsync(user);
             return new ChangePassResultDto() { Confirmed = true, TwoFactorRequired = true };
         }
 
         throw new BadRequestException(stringLocalizer["could not find proposed request or expired"]);
     }
+    #endregion
 
+    #region ForgottenPassword
+    public async Task ForgottenPasswordRequestAsync(string email)
+    {
+        if (cache.Get<dynamic>($"requested_reset:{email}") != null)
+            return;
 
+        var user = await userRepo.GetByEmailAsync(email) ?? throw new NotFoundException(stringLocalizer["Email not found"]);
+        var validationToken = GenerateSecureBase64Token(64);
+
+        cache.Set(
+            $"forgot_password:{validationToken}",
+            new { Email = email }, 
+            DateTime.Now.AddMinutes(60));
+
+        // an entity to register that users requested or not to prevent flooding requests and spams
+        cache.Set($"requested_reset:{email}", new {}, DateTime.Now.AddMinutes(60));
+
+        // will change to the front server once deployed as redirection
+        var resetPasswordLink = "suposdly-front-web-server-address" + "/auth/verify-password-reset?token=" + validationToken;
+
+        emailService.SendEmail(new EmailModel() 
+        { ReicieverEmail = email, Body = EmailTemplates.GetForgottenPasswordEmailBody(resetPasswordLink), Header = "Password Reset Request"});
+    }
+
+    public async Task ResetPasswordAsync(string token, string newPassword)
+    {
+        var cachedData = cache.Get<dynamic>("forgot_password:" + token) ?? throw new NotFoundException(stringLocalizer["could not find proposed request or expired"]);
+
+        cache.Remove("forgot_password:" + token);
+        cache.Remove($"requested_reset:{cachedData.Email}");
+
+        var user = await userRepo.GetByEmailAsync(cachedData.Email) ?? throw new NotFoundException(stringLocalizer["user not found"]);   // to prevent tampering just in case
+        var salt = GenerateSalt();
+        var hashedPassword = Hash(salt, newPassword);
+        user.HashedPassword = hashedPassword;
+        user.Salt = salt;
+        user.UserSettings.PasswordChangeCounter += 1;
+        await userRepo.UpdateAsync(user);
+    }
+    #endregion
+
+    private static string GenerateSecureBase64Token(int byteLength)
+    {
+        using (var rng = RandomNumberGenerator.Create())
+        {
+            byte[] randomBytes = new byte[byteLength];
+            rng.GetBytes(randomBytes);
+
+            return Convert.ToBase64String(randomBytes)
+                         .Replace("+", "-")  // URL-safe
+                         .Replace("/", "_")
+                         .Replace("=", "");  // Remove padding
+        }
+    }
 
     private static string Hash(string salt, string pass)
     {

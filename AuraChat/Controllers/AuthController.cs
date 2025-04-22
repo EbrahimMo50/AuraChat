@@ -23,14 +23,14 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> SignUp(RegisterRequestDto registerRequestDto)
+    public async Task<IActionResult> SignUpAsync(RegisterRequestDto registerRequestDto)
     {
         await authService.RegisterAsync(registerRequestDto); 
         return Ok();
     }
 
     [HttpPost("confirm-register")]
-    public async Task<IActionResult> ConfirmSignUp(RegisterConfirmDto registerConfirmDto)
+    public async Task<IActionResult> ConfirmSignUpAsync(RegisterConfirmDto registerConfirmDto)
     {
         await authService.ConfirmRegisterAsync(registerConfirmDto);
         return Ok();
@@ -38,7 +38,7 @@ public class AuthController(IAuthService authService) : ControllerBase
 
     [Authorize]
     [HttpPut("change-password")]
-    public async Task<IActionResult> ChangePassword(ChangePassDto changePassDto)
+    public async Task<IActionResult> ChangePasswordAsync(ChangePassDto changePassDto)
     {
         var userId = int.Parse(HttpContext.User.FindFirst("Id")!.Value);
         var result = await authService.ChangePasswordAsync(userId, changePassDto);
@@ -46,10 +46,24 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
     [Authorize]
     [HttpPut("confirm-change-password")]
-    public async Task<IActionResult> ConfirmChangePassword(string otp)
+    public async Task<IActionResult> ConfirmChangePasswordAsync(string otp)
     {
         var userId = int.Parse(HttpContext.User.FindFirst("Id")!.Value);
         var result = await authService.ConfirmChangePasswordAsync(userId, otp);
         return Ok(result);
+    }
+
+    [HttpPut("request-password-reset")]
+    public async Task<IActionResult> RequestPasswordResetAsync([FromBody] string email)
+    {
+        await authService.ForgottenPasswordRequestAsync(email);
+        return Ok();
+    }
+
+    [HttpPut("verify-password-reset")]
+    public async Task<IActionResult> VerifyPasswordReset(string token, [FromBody] string newPassword)
+    {
+        await authService.ResetPasswordAsync(token, newPassword);
+        return Ok();
     }
 }

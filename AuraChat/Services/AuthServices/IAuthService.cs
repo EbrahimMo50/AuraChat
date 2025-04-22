@@ -4,14 +4,12 @@ namespace AuraChat.Services.AuthServices;
 
 public interface IAuthService
 {
-    /// <summary>
-    /// return type is void thus it is required to login before returning the token
-    /// </summary>
-    /// <param name="loginDto"></param>
     public Task<LoginResultDto> LoginAsync(LoginDto loginDto);
-    public Task RegisterAsync(RegisterRequestDto registerDto);
-    public Task<ChangePassResultDto> ChangePasswordAsync(int userId, ChangePassDto changePassDto);
     public LoginResultDto ConfirmLogin(int userId, string otp);
+    public Task RegisterAsync(RegisterRequestDto registerDto);
     public Task ConfirmRegisterAsync(RegisterConfirmDto registerConfirmDto);
+    public Task<ChangePassResultDto> ChangePasswordAsync(int userId, ChangePassDto changePassDto);
     public Task<ChangePassResultDto> ConfirmChangePasswordAsync(int userId,string otp);
+    public Task ForgottenPasswordRequestAsync(string email);
+    public Task ResetPasswordAsync(string token, string newPassword);
 }
