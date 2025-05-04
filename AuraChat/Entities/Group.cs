@@ -9,7 +9,7 @@ public class Group
     public DateTime CreatedAt { get; } = DateTime.UtcNow;
     public ICollection<UserGroup> Members { get; set; } = [];
     public ICollection<Message> Messages { get; set; } = [];
-    public GroupSettings Settings { get; set; } = null!;
+    public GroupSettings Settings { get; set; } = new();
     public int CreatorId { get; set; }
     public User Creator { get; set; } = null!;
 }

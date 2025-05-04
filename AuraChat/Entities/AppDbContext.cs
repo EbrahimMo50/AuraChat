@@ -31,8 +31,8 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<Chat>(entity =>
         {
-            entity.HasOne(c => c.UserA).WithOne().HasForeignKey<Chat>(c => c.UserAId);
-            entity.HasOne(c => c.UserB).WithOne().HasForeignKey<Chat>(c => c.UserBId);
+            entity.HasOne(c => c.UserA).WithOne().HasForeignKey<Chat>(c => c.UserAId).OnDelete(DeleteBehavior.NoAction);
+            entity.HasOne(c => c.UserB).WithOne().HasForeignKey<Chat>(c => c.UserBId).OnDelete(DeleteBehavior.NoAction);
         });
     }
 }
