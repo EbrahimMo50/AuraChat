@@ -26,14 +26,14 @@ public class AuthController(IAuthService authService) : ControllerBase
     public async Task<IActionResult> SignUpAsync(RegisterRequestDto registerRequestDto)
     {
         await authService.RegisterAsync(registerRequestDto); 
-        return Ok();
+        return NoContent();
     }
 
     [HttpPost("confirm-register")]
     public async Task<IActionResult> ConfirmSignUpAsync(RegisterConfirmDto registerConfirmDto)
     {
         await authService.ConfirmRegisterAsync(registerConfirmDto);
-        return Ok();
+        return NoContent();
     }
 
     [Authorize]
@@ -57,13 +57,13 @@ public class AuthController(IAuthService authService) : ControllerBase
     public async Task<IActionResult> RequestPasswordResetAsync([FromBody] string email)
     {
         await authService.ForgottenPasswordRequestAsync(email);
-        return Ok();
+        return NoContent();
     }
 
     [HttpPut("verify-password-reset")]
     public async Task<IActionResult> VerifyPasswordReset(string token, [FromBody] string newPassword)
     {
         await authService.ResetPasswordAsync(token, newPassword);
-        return Ok();
+        return NoContent();
     }
 }
