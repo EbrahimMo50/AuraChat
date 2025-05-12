@@ -199,25 +199,20 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseRequestLocalization(localizationOptions);
+
+app.UseMiddleware<ExceptionHandlerMiddleware>();
+
 app.UseRouting();
 
 app.UseRateLimiter();
-
-app.UseMiddleware<ExceptionHandlerMiddleware>();
 
 app.UseAuthentication();
 
 app.UseAuthorization();
 
+app.UseMiddleware<AuditLoggerMiddleware>();
+
 app.MapControllers();
 
-if (!app.Environment.IsProduction())
-{
-    // app.UseMiddleware<ExceptionHandlerMiddleware>();
-}
-
-app.UseRequestLocalization(localizationOptions);
-
 app.Run();
-
-// Todo in this branch finish confirm pass and 
