@@ -1,3 +1,4 @@
+using AuraChat.Configurations;
 using AuraChat.Entities;
 using AuraChat.MiddleWares;
 using AuraChat.Policies;
@@ -20,7 +21,6 @@ using System.Threading.RateLimiting;
 var builder = WebApplication.CreateBuilder(args);
 Env.Load();
 // Add services to the container.
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -70,6 +70,10 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 
 #region independent services
 
+builder.Services.Configure<UploadSettings>(builder.Configuration.GetSection("UploadSettings"));
+
+builder.Services.AddScoped<MediaService>();
+
 builder.Services.AddMemoryCache();
 
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
@@ -83,7 +87,7 @@ builder.Services.AddRateLimiter(options =>
 {
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: httpContext.User.FindFirstValue("id") ?? httpContext.Request.Headers.Host.ToString(),
+            partitionKey: httpContext.User.FindFirstValue("Id") ?? httpContext.Request.Headers.Host.ToString(),
             factory: partition => new FixedWindowRateLimiterOptions
             {
                 // limit the window to 10 requests per minute
@@ -201,7 +205,7 @@ app.UseHttpsRedirection();
 
 app.UseRequestLocalization(localizationOptions);
 
-app.UseMiddleware<ExceptionHandlerMiddleware>();
+// app.UseMiddleware<ExceptionHandlerMiddleware>();
 
 app.UseRouting();
 

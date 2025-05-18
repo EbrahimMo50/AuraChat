@@ -364,3 +364,6 @@ FodyWeavers.xsd
 
 # Environment files
 .env
+
+# Independent Folders
+/AuraChat/Uploads/

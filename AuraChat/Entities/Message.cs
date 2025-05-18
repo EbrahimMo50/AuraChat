@@ -11,5 +11,5 @@ public class Message
     public ICollection<RecieverState> RecieverState { get; set; } = [];
     public DateTime SentTime { get; set; } = DateTime.UtcNow;
     public string Content { get; set; } = null!;
-    public string? MediaGuid { get; set; }
+    public ICollection<string> MediaGuid { get; set; } = [];
 }
